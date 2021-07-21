@@ -11,12 +11,15 @@ class ViewController: UIViewController {
     
     var wordLabel: UILabel!
     var triesLeftLabel: UILabel!
-    var submitButton: UIButton!
+    var guessButton: UIButton!
+    var currentWord = ""
+    var correctGuesses = [String]()
     var triesLeft = 7 {
         didSet {
             triesLeftLabel.text = "Tries Left: \(triesLeft)"
             if triesLeft <= 0 {
-                showErrorAlert(title: "Game Over", message: nil)
+                showErrorAlert(title: "Game Over", message: "Try again?")
+                performSelector(inBackground: #selector(loadWords), with: nil)
             }
         }
     }
@@ -25,7 +28,7 @@ class ViewController: UIViewController {
         createSuperView()
         addWordLabel()
         addTriesLeftLabel()
-        addSubmitButton()
+        addGuessButton()
         addConstraints()
         print("Reached at the end of loadView")
     }
@@ -68,27 +71,78 @@ class ViewController: UIViewController {
         ]
     }
     
-    func addSubmitButton() {
-        submitButton = UIButton(type: .system)
-        submitButton.translatesAutoresizingMaskIntoConstraints = false
-        submitButton.setTitle("SUBMIT", for: .normal)
-        submitButton.titleLabel?.font = UIFont.systemFont(ofSize: 34)
-        submitButton.addTarget(self, action: #selector(submitTapped), for: .touchUpInside)
-        submitButton.layer.borderColor = UIColor.lightGray.cgColor
-        submitButton.layer.borderWidth = 1
-        view.addSubview(submitButton)
+    func addGuessButton() {
+        guessButton = UIButton(type: .system)
+        guessButton.translatesAutoresizingMaskIntoConstraints = false
+        guessButton.setTitle("GUESS", for: .normal)
+        guessButton.titleLabel?.font = UIFont.systemFont(ofSize: 34)
+        guessButton.addTarget(self, action: #selector(guessTapped), for: .touchUpInside)
+        guessButton.titleLabel?.numberOfLines = 0
+        guessButton.layer.borderColor = UIColor.lightGray.cgColor
+        guessButton.layer.borderWidth = 5
+        guessButton.contentEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        view.addSubview(guessButton)
     }
     
-    func getSubmitConstraints() -> [NSLayoutConstraint] {
+    func getGuessButtonConstraints() -> [NSLayoutConstraint] {
         [
-            submitButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            submitButton.topAnchor.constraint(equalTo: triesLeftLabel.bottomAnchor),
-            submitButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50)
+            guessButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            guessButton.topAnchor.constraint(equalTo: triesLeftLabel.bottomAnchor),
+            guessButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50)
         ]
     }
     
-    @objc func submitTapped() {
-        print("TBD")
+    @objc func guessTapped() {
+        let ac = UIAlertController(title: "Venture a guess . . .", message: ". . . or the Hanged man gets it!", preferredStyle: .alert)
+        ac.addTextField()
+        let cancel = UIAlertAction(title: "Cancel", style: .destructive)
+        let ok = UIAlertAction(title: "OK", style: .default) { [weak self, weak ac] action in
+            guard let userAnswer = ac?.textFields?[0].text?.lowercased() else { return }
+            guard userAnswer.count == 1 else {
+                self?.showErrorAlert(title: "Invalid Input", message: "Please enter only one letter at a time!")
+                return
+            }
+            self?.checkGuess(userAnswer)
+        }
+        ac.addAction(cancel)
+        ac.addAction(ok)
+        present(ac, animated: true)
+    }
+    
+    func checkGuess(_ answer: String) {
+        if currentWord.contains(answer) {
+            userGaveRightAnswer(answer)
+        } else {
+            userGaveWrongAnswer()
+        }
+    }
+    
+    func userGaveRightAnswer(_ letter: String) {
+        var newTitle = ""
+        
+        correctGuesses.append(letter)
+        
+        for letter in currentWord {
+            let letterStr = String(letter)
+            if correctGuesses.contains(letterStr) {
+                newTitle += letterStr
+            } else {
+                newTitle += "?"
+            }
+        }
+        
+        newTitle = newTitle.uppercased()
+        
+        wordLabel.text = newTitle
+        
+        if !newTitle.contains("?") {
+            showInfoAlert(title: "🍻 You won!", message: "The Hangman is safe for now. You wanna gamble his life again?")
+        }
+    }
+    
+    func userGaveWrongAnswer() {
+        triesLeft -= 1
+        showInfoAlert(title: "🚨 Wrong Guess", message: "The Hangman is one step closer to death")
     }
     
     func showAlert(title: String, message: String?, action: UIAlertAction) {
@@ -106,11 +160,15 @@ class ViewController: UIViewController {
         showInfoAlert(title: "⚠️ \(title)", message: message)
     }
     
+    @objc func showLoadError(message: String?) {
+        showErrorAlert(title: "Loading Error", message: message)
+    }
+    
     func addConstraints() {
         var allConstraints: [NSLayoutConstraint]
         allConstraints = getWordLabelConstraints()
         allConstraints += getTriesLeftLabelConstraints()
-        allConstraints += getSubmitConstraints()
+        allConstraints += getGuessButtonConstraints()
         
         NSLayoutConstraint.activate(allConstraints)
     }
@@ -121,10 +179,28 @@ class ViewController: UIViewController {
         performSelector(inBackground: #selector(loadWords), with: nil)
     }
     
+    func showLoadErrorOnMainThread(message: String? = nil) {
+        performSelector(onMainThread: #selector(showLoadError), with: message, waitUntilDone: false)
+    }
+    
     
     @objc func loadWords() {
         if let url = Bundle.main.url(forResource: "start", withExtension: "txt") {
-            
+            if let words = try? String(contentsOf: url) {
+                if let randomWord = words.components(separatedBy: "\n").randomElement() {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.currentWord = randomWord.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                        self?.triesLeft = 7
+                        print(self?.currentWord)
+                    }
+                } else {
+                    showLoadErrorOnMainThread(message: "Could not load word from loaded data")
+                }
+            } else {
+                showLoadErrorOnMainThread(message: "Could not parse  loaded data")
+            }
+        } else {
+            showLoadErrorOnMainThread(message: "Could not load data")
         }
     }
 
