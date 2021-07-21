@@ -13,6 +13,7 @@
 		85E5F47B26A7C6AF0031B012 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85E5F47926A7C6AF0031B012 /* Main.storyboard */; };
 		85E5F47D26A7C6B50031B012 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85E5F47C26A7C6B50031B012 /* Assets.xcassets */; };
 		85E5F48026A7C6B50031B012 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 85E5F47E26A7C6B50031B012 /* LaunchScreen.storyboard */; };
+		85E5F48826A7C85B0031B012 /* start.txt in Resources */ = {isa = PBXBuildFile; fileRef = 85E5F48726A7C85B0031B012 /* start.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		85E5F47C26A7C6B50031B012 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		85E5F47F26A7C6B50031B012 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		85E5F48126A7C6B50031B012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		85E5F48726A7C85B0031B012 /* start.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = start.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 		85E5F47226A7C6AF0031B012 /* Hangman */ = {
 			isa = PBXGroup;
 			children = (
+				85E5F48726A7C85B0031B012 /* start.txt */,
 				85E5F47326A7C6AF0031B012 /* AppDelegate.swift */,
 				85E5F47526A7C6AF0031B012 /* SceneDelegate.swift */,
 				85E5F47726A7C6AF0031B012 /* ViewController.swift */,
@@ -125,6 +128,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				85E5F48026A7C6B50031B012 /* LaunchScreen.storyboard in Resources */,
+				85E5F48826A7C85B0031B012 /* start.txt in Resources */,
 				85E5F47D26A7C6B50031B012 /* Assets.xcassets in Resources */,
 				85E5F47B26A7C6AF0031B012 /* Main.storyboard in Resources */,
 			);
